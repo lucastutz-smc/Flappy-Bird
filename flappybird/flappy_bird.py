@@ -402,13 +402,11 @@ def eval_genomes(genomes, config):
 
         draw_window(WIN, birds, pipes, base, score, gen, pipe_ind)
 
+        # Als de score groter of gelijk aan 25 is, wordt het spel onderbroken en het neurale netwerk van de beste vogel opgeslagen als best.pickle
         if score >= 25:
             run = False
-        # break if score gets large enough
-        '''if score > 20:
             pickle.dump(nets[0],open("best.pickle", "wb"))
-            break'''
-
+            break
 
 def run(config_file):
     """
