@@ -31,7 +31,7 @@ bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","b
 base_img = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 
 #16-bepaalt de generatie als globale variabele
-gen = 1
+gen = 0
 
 class Bird:
     """
@@ -283,7 +283,7 @@ def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #11-vervangt bir
     base.draw(win)
     #12- tekent meerdere vogels
     for bird in birds:
-        # draw lines from bird to pipe
+        # 7. teken lijnen van vogel naar pijp
         if DRAW_LINES:
             try:
                 pygame.draw.line(win, (255,0,0), (bird.x+bird.img.get_width()/2, bird.y + bird.img.get_height()/2), (pipes[pipe_ind].x + pipes[pipe_ind].PIPE_TOP.get_width()/2, pipes[pipe_ind].height), 5)
@@ -319,9 +319,9 @@ def eval_genomes(genomes, config):
     #17-elke run van de programma voegt het 1 aan het generatienummer
     gen += 1
 
-    # start by creating lists holding the genome itself, the
-    # neural network associated with the genome and the
-    # bird object that uses that network to play
+    # 8. begin met het maken van lijsten met het genoom zelf, het
+    # neurale netwerk dat is gekoppeld aan het genoom en het
+    # vogelobject dat dat netwerk gebruikt om te spelen
     nets = []
     birds = []
     ge = []
@@ -372,7 +372,6 @@ def eval_genomes(genomes, config):
             # 10-voegt "[0]" toe omdat output een lijst is
             if output[0] > 0.5: 
                 bird.jump()
-                
 
         base.move()
 
@@ -380,7 +379,7 @@ def eval_genomes(genomes, config):
         add_pipe = False
         for pipe in pipes:
             pipe.move()
-            # check for collision
+            # 9. controleer op botsing
             for bird in birds:
                 if pipe.collide(bird, win):
                     ge[birds.index(bird)].fitness -= 1
@@ -413,44 +412,44 @@ def eval_genomes(genomes, config):
 
         draw_window(WIN, birds, pipes, base, score, gen, pipe_ind)
 
-        # Als de score groter of gelijk aan 25 is, wordt het spel onderbroken en het neurale netwerk van de beste vogel opgeslagen als best.pickle
-        if score >= 25:
-            run = False
+        # 11. break als de score hoog genoeg wordt
+        '''if score > 20:
             pickle.dump(nets[0],open("best.pickle", "wb"))
-            break
+            break'''
+
 
 def run(config_file):
     """
-    runs the NEAT algorithm to train a neural network to play flappy bird.
-    :param config_file: location of config file
-    :return: None
-    """
+1. voert het NEAT-algoritme uit om een neuraal netwerk te trainen om flappy bird te spelen.
+:param config_file: locatie van config-bestand
+:return: Geen
+"""
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
-    # Create the population, which is the top-level object for a NEAT run.
+    # 3. Maak de populatie aan, dit is het object op het hoogste niveau voor een NEAT-run.
     p = neat.Population(config)
 
-    # Add a stdout reporter to show progress in the terminal.
+    # 4. Voeg een stdout-reporter toe om de voortgang in de terminal weer te geven.
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     #p.add_reporter(neat.Checkpointer(5))
 
-    # Run for up to 50 generations.
-    winner = p.run(eval_genomes, 50)
+    # 5. Kan tot wel 30 generaties runnen.
+    winner = p.run(eval_genomes, 30)
 
-    # show final stats
+    # 6. laat laatste stats zien
     print('\nBest genome:\n{!s}'.format(winner))
 
 
 if __name__ == '__main__':
-    # Determine path to configuration file. This path manipulation is
-    # here so that the script will run successfully regardless of the
-    # current working directory.
+    # 2. Bepaal het pad naar het configuratiebestand. Deze padmanipulatie is
+    # hier zodat het script succesvol wordt uitgevoerd, ongeacht de
+    # huidige werkdirectory.
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-feedforward.txt')
     run(config_path)
-
-pygame.quit()
+   
+    pygame.quit()
