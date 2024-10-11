@@ -1,4 +1,4 @@
-Gemaakt door Lucas Stutz en Soham Ostwal volgens de volgende instructies:
+Flappy bird game met AI die hem speelt gemaakt door Lucas Stutz en Soham Ostwal volgens de volgende instructies:
 
 # Video Tutorial
 
