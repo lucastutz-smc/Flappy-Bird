@@ -1,11 +1,3 @@
-"""
-The classic game of flappy bird. Make with python
-and pygame. Features pixel perfect collision using masks :o
-
-Date Modified:  Jul 30, 2019
-Author: Tech With Tim
-Estimated Work Time: 5 hours (1 just for that damn collision)
-"""
 import pygame
 import random
 import os
@@ -30,8 +22,8 @@ bg_img = pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg.png"))
 bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png"))) for x in range(1,4)]
 base_img = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 
-#16-bepaalt de generatie als globale variabele
-gen = 0
+#27-bepaalt de generatie als globale variabele
+gen = 1
 
 class Bird:
     """
@@ -262,7 +254,7 @@ def blitRotateCenter(surf, image, topleft, angle):
 
     surf.blit(rotated_image, new_rect.topleft)
 
-def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #11-vervangt bird met birds om meerdere vogels te tekenen #14-voegt de generatie toe aan het scherm
+def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #22-vervangt bird met birds om meerdere vogels te tekenen #25-voegt de generatie toe aan het scherm
     """
     draws the windows for the main game loop
     :param win: pygame window surface
@@ -281,7 +273,7 @@ def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #11-vervangt bir
         pipe.draw(win)
 
     base.draw(win)
-    #12- tekent meerdere vogels
+    #23- tekent meerdere vogels
     for bird in birds:
         # 7. teken lijnen van vogel naar pijp
         if DRAW_LINES:
@@ -297,7 +289,7 @@ def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #11-vervangt bir
     score_label = STAT_FONT.render("Score: " + str(score),1,(255,255,255))
     win.blit(score_label, (WIN_WIDTH - score_label.get_width() - 15, 10))
 
-    #15-voegt de generatie toe aan het scherm
+    #26-voegt de generatie toe aan het scherm
     score_label = STAT_FONT.render("Gens: " + str(gen-1),1,(255,255,255))
     win.blit(score_label, (10, 10))
 
@@ -316,7 +308,7 @@ def eval_genomes(genomes, config):
     """
     global WIN, gen
     win = WIN
-    #17-elke run van de programma voegt het 1 aan het generatienummer
+    #28-elke run van de programma voegt het 1 aan het generatienummer
     gen += 1
 
     # 8. begin met het maken van lijsten met het genoom zelf, het
@@ -325,9 +317,9 @@ def eval_genomes(genomes, config):
     nets = []
     birds = []
     ge = []
-    for genome_id, genome in genomes: # 7-loopt door de id én het object
+    for genome_id, genome in genomes: # 18-loopt door de id én het object
         genome.fitness = 0  # start with fitness level of 0
-        net = neat.nn.FeedForwardNetwork.create(genome, config) #8-creërt de genome
+        net = neat.nn.FeedForwardNetwork.create(genome, config) #19-creërt de genome
         nets.append(net)
         birds.append(Bird(230,350))
         ge.append(genome)
@@ -345,31 +337,31 @@ def eval_genomes(genomes, config):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                # 6-sluit het programma als de iteraties al voorbij zijn
+                # 17-sluit het programma als de iteraties al voorbij zijn
                 pygame.quit()
                 quit()
                 break
 
-        # 1-besluit welke pijp te gebruiken op het scherm voor de neurale netwerk input
+        # 12-besluit welke pijp te gebruiken op het scherm voor de neurale netwerk input
         pipe_ind = 0
         if len(birds) > 0:
             if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width():  
                 pipe_ind = 1                                                               
-        #9-als er geen vogels meer zijn stopt de simulatie        
+        #21-als er geen vogels meer zijn stopt de simulatie        
         else:
             run = False
             break
 
-        # 2-voor elke frame dat de vogels overleven krijgen ze 0.1 fitness
+        # 13-voor elke frame dat de vogels overleven krijgen ze 0.1 fitness
         for x, bird in enumerate(birds):  
             ge[x].fitness += 0.1
             bird.move()
 
-            # 3-stuurt de positie van de vogel, bovenste pijp en onderste pijp en bepaalt van het netwerk of het springen moet of niet
+            # 14-stuurt de positie van de vogel, bovenste pijp en onderste pijp en bepaalt van het netwerk of het springen moet of niet
             output = nets[birds.index(bird)].activate((bird.y, abs(bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].bottom)))
 
-            # 4-gebruik de tanh activation functie zodat de uitkomst tussen -1 en 1 zit. Als het groter is dan 0.5, dan springt de vogel
-            # 10-voegt "[0]" toe omdat output een lijst is
+            # 15-gebruik de tanh activation functie zodat de uitkomst tussen -1 en 1 zit. Als het groter is dan 0.5, dan springt de vogel
+            # 20-voegt "[0]" toe omdat output een lijst is
             if output[0] > 0.5: 
                 bird.jump()
 
@@ -396,7 +388,7 @@ def eval_genomes(genomes, config):
 
         if add_pipe:
             score += 1
-            # can add this line to give more reward for passing through a pipe (not required)
+            # 10. kan deze regel toevoegen om meer beloning te geven voor het passeren van een pijp (niet vereist)
             for genome in ge:
                 genome.fitness += 5
             pipes.append(Pipe(WIN_WIDTH))
@@ -405,7 +397,7 @@ def eval_genomes(genomes, config):
             pipes.remove(r)
 
         for bird in birds:
-            if bird.y + bird.img.get_height() - 10 >= FLOOR or bird.y < -50: #5-controleert of de vogels nog binnen het scherm zijn
+            if bird.y + bird.img.get_height() - 10 >= FLOOR or bird.y < -50: #16-controleert of de vogels nog binnen het scherm zijn
                 nets.pop(birds.index(bird))
                 ge.pop(birds.index(bird))
                 birds.pop(birds.index(bird))
