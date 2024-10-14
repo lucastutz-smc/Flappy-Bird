@@ -22,7 +22,7 @@ bg_img = pygame.transform.scale(pygame.image.load(os.path.join("imgs","bg.png"))
 bird_images = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","bird" + str(x) + ".png"))) for x in range(1,4)]
 base_img = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","base.png")).convert_alpha())
 
-#27-bepaalt de generatie als globale variabele
+# bepaalt de generatie als globale variabele
 gen = 1
 
 class Bird:
@@ -254,7 +254,7 @@ def blitRotateCenter(surf, image, topleft, angle):
 
     surf.blit(rotated_image, new_rect.topleft)
 
-def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #22-vervangt bird met birds om meerdere vogels te tekenen #25-voegt de generatie toe aan het scherm
+def draw_window(win, birds, pipes, base, score, gen, pipe_ind): # vervangt bird met birds om meerdere vogels te tekenen # voegt de generatie toe aan het scherm
     """
     draws the windows for the main game loop
     :param win: pygame window surface
@@ -273,9 +273,9 @@ def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #22-vervangt bir
         pipe.draw(win)
 
     base.draw(win)
-    #23-tekent meerdere vogels
+    # tekent meerdere vogels
     for bird in birds:
-        #7-teken lijnen van vogel naar pijp
+        # teken lijnen van vogel naar pijp
         if DRAW_LINES:
             try:
                 pygame.draw.line(win, (255,0,0), (bird.x+bird.img.get_width()/2, bird.y + bird.img.get_height()/2), (pipes[pipe_ind].x + pipes[pipe_ind].PIPE_TOP.get_width()/2, pipes[pipe_ind].height), 5)
@@ -289,7 +289,7 @@ def draw_window(win, birds, pipes, base, score, gen, pipe_ind): #22-vervangt bir
     score_label = STAT_FONT.render("Score: " + str(score),1,(255,255,255))
     win.blit(score_label, (WIN_WIDTH - score_label.get_width() - 15, 10))
 
-    #26-voegt de generatie toe aan het scherm
+    # voegt de generatie toe aan het scherm
     score_label = STAT_FONT.render("Gens: " + str(gen-1),1,(255,255,255))
     win.blit(score_label, (10, 10))
 
@@ -308,21 +308,27 @@ def eval_genomes(genomes, config):
     """
     global WIN, gen
     win = WIN
-    #28-elke run van de programma voegt het 1 aan het generatienummer
+    # elke run van de programma voegt het 1 aan het generatienummer
     gen += 1
 
-    #8-begin met het maken van lijsten met het genoom zelf, het
+    # begin met het maken van lijsten met het genoom zelf, het
     # neurale netwerk dat is gekoppeld aan het genoom en het
     # vogelobject dat dat netwerk gebruikt om te spelen
     nets = []
     birds = []
     ge = []
-    for genome_id, genome in genomes: # 18-loopt door de id én het object
-        genome.fitness = 0  # start with fitness level of 0
-        net = neat.nn.FeedForwardNetwork.create(genome, config) #19-creërt de genome
-        nets.append(net)
-        birds.append(Bird(230,350))
-        ge.append(genome)
+    
+    #1- Om het spel te spelen met de beste vogel in plaats van nieuwe neurale netwerken te creëren moet "best.pickle" 
+    # Daarvoor moet: 
+    # - de for loop uitgehaald worden; 
+    # - de genome fitness (die staat er al in het neurale netwerk van best.pickle);
+    # - de nets lijst wordt alleen maar één object, best.pickle in plaats dat er bij elke loop een nieuwe vogel toegevoegd wordt;
+    # - genome wordt niet meer gewijzigd
+    with open('best.pickle', 'rb') as handle:
+        net = pickle.load(handle)
+    nets.append(net)
+    #2-dit moet nog gebeuren, maar nu maar één keer omdat het geen for loop meer is
+    birds.append(Bird(230,350))
 
     base = Base(FLOOR)
     pipes = [Pipe(700)]
@@ -337,31 +343,31 @@ def eval_genomes(genomes, config):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                #17-sluit het programma als de iteraties al voorbij zijn
+                # sluit het programma als de iteraties al voorbij zijn
                 pygame.quit()
                 quit()
                 break
 
-        #12-besluit welke pijp te gebruiken op het scherm voor de neurale netwerk input
+        # besluit welke pijp te gebruiken op het scherm voor de neurale netwerk input
         pipe_ind = 0
         if len(birds) > 0:
             if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width():  
                 pipe_ind = 1                                                               
-        #21-als er geen vogels meer zijn stopt de simulatie        
+        # als er geen vogels meer zijn stopt de simulatie        
         else:
             run = False
             break
 
-        #13-voor elke frame dat de vogels overleven krijgen ze 0.1 fitness
-        for x, bird in enumerate(birds):  
-            ge[x].fitness += 0.1
+        # voor elke frame dat de vogels overleven krijgen ze 0.1 fitness
+        for x, bird in enumerate(birds):
+            #3-De fitness wordt niet meer gewijzigd, het netwerk is al klaar 
             bird.move()
 
-            #14-stuurt de positie van de vogel, bovenste pijp en onderste pijp en bepaalt van het netwerk of het springen moet of niet
+            # stuurt de positie van de vogel, bovenste pijp en onderste pijp en bepaalt van het netwerk of het springen moet of niet
             output = nets[birds.index(bird)].activate((bird.y, abs(bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].bottom)))
 
-            #15-gebruik de tanh activation functie zodat de uitkomst tussen -1 en 1 zit. Als het groter is dan 0.5, dan springt de vogel
-            #20-voegt "[0]" toe omdat output een lijst is
+            # gebruik de tanh activation functie zodat de uitkomst tussen -1 en 1 zit. Als het groter is dan 0.5, dan springt de vogel
+            # voegt "[0]" toe omdat output een lijst is
             if output[0] > 0.5: 
                 bird.jump()
 
@@ -371,7 +377,7 @@ def eval_genomes(genomes, config):
         add_pipe = False
         for pipe in pipes:
             pipe.move()
-            #9-controleer op botsing
+            # controleer op botsing
             for bird in birds:
                 if pipe.collide(bird, win):
                     ge[birds.index(bird)].fitness -= 1
@@ -388,7 +394,7 @@ def eval_genomes(genomes, config):
 
         if add_pipe:
             score += 1
-            #10-kan deze regel toevoegen om meer beloning te geven voor het passeren van een pijp (niet vereist)
+            # kan deze regel toevoegen om meer beloning te geven voor het passeren van een pijp (niet vereist)
             for genome in ge:
                 genome.fitness += 5
             pipes.append(Pipe(WIN_WIDTH))
@@ -397,48 +403,47 @@ def eval_genomes(genomes, config):
             pipes.remove(r)
 
         for bird in birds:
-            if bird.y + bird.img.get_height() - 10 >= FLOOR or bird.y < -50: #16-controleert of de vogels nog binnen het scherm zijn
+            if bird.y + bird.img.get_height() - 10 >= FLOOR or bird.y < -50: # controleert of de vogels nog binnen het scherm zijn
                 nets.pop(birds.index(bird))
                 ge.pop(birds.index(bird))
                 birds.pop(birds.index(bird))
 
         draw_window(WIN, birds, pipes, base, score, gen, pipe_ind)
 
-        #29-Als de score hoog genoeg wordt, wordt het neurale netwerk van de vogel opgeslagen in het bestand "best.pickle"
+        # break als de score hoog genoeg wordt
         if score >= 25:
             pickle.dump(nets[0],open("best.pickle", "wb"))
-            #11-break als de score hoog genoeg wordt
             pygame.quit()
             break  
 
 def run(config_file):
-    
-#1-voert het NEAT-algoritme uit om een neuraal netwerk te trainen om flappy bird te spelen.
-#:param config_file: locatie van config-bestand
-#:return: Geen
-
+    """
+1. voert het NEAT-algoritme uit om een neuraal netwerk te trainen om flappy bird te spelen.
+:param config_file: locatie van config-bestand
+:return: Geen
+"""
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
-    #3-Maak de populatie aan, dit is het object op het hoogste niveau voor een NEAT-run.
+    # Maak de populatie aan, dit is het object op het hoogste niveau voor een NEAT-run.
     p = neat.Population(config)
 
-    #4-Voeg een stdout-reporter toe om de voortgang in de terminal weer te geven.
+    # Voeg een stdout-reporter toe om de voortgang in de terminal weer te geven.
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     #p.add_reporter(neat.Checkpointer(5))
 
-    #5-Kan tot wel 30 generaties runnen.
+    # Kan tot wel 30 generaties runnen.
     winner = p.run(eval_genomes, 30)
 
-    #6-laat laatste stats zien
+    # laat laatste stats zien
     print('\nBest genome:\n{!s}'.format(winner))
 
 
 if __name__ == '__main__':
-    #2-Bepaal het pad naar het configuratiebestand. Deze padmanipulatie is
+    # Bepaal het pad naar het configuratiebestand. Deze padmanipulatie is
     # hier zodat het script succesvol wordt uitgevoerd, ongeacht de
     # huidige werkdirectory.
     local_dir = os.path.dirname(__file__)
