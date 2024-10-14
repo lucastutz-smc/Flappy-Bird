@@ -404,26 +404,27 @@ def eval_genomes(genomes, config):
 
         draw_window(WIN, birds, pipes, base, score, gen, pipe_ind)
 
-        # 11. break als de score hoog genoeg wordt
-        '''if score > 20:
+        #29-Als de score hoog genoeg wordt, wordt het neurale netwerk van de vogel opgeslagen in het bestand "best.pickle"
+        if score > 25:
             pickle.dump(nets[0],open("best.pickle", "wb"))
-            break'''
-
+            #11-break als de score hoog genoeg wordt
+            pygame.quit()
+            break  
 
 def run(config_file):
-    """
-1. voert het NEAT-algoritme uit om een neuraal netwerk te trainen om flappy bird te spelen.
-:param config_file: locatie van config-bestand
-:return: Geen
-"""
+    
+#1-voert het NEAT-algoritme uit om een neuraal netwerk te trainen om flappy bird te spelen.
+#:param config_file: locatie van config-bestand
+#:return: Geen
+
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
-    # 3. Maak de populatie aan, dit is het object op het hoogste niveau voor een NEAT-run.
+    #3-Maak de populatie aan, dit is het object op het hoogste niveau voor een NEAT-run.
     p = neat.Population(config)
 
-    # 4. Voeg een stdout-reporter toe om de voortgang in de terminal weer te geven.
+    #4-Voeg een stdout-reporter toe om de voortgang in de terminal weer te geven.
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
