@@ -404,7 +404,7 @@ def eval_genomes(genomes, config):
 
         draw_window(WIN, birds, pipes, base, score, gen, pipe_ind)
 
-        #29-Als de score hoog genoeg wordt, wordt het neurale netwerk van de vogel opgeslagen in het bestand "best.pickle"
+        #29-(zelf opgezocht) Als de score hoog genoeg wordt, wordt het neurale netwerk van de vogel opgeslagen in het bestand "best.pickle"
         if score >= 25:
             pickle.dump(nets[0],open("best.pickle", "wb"))
             #11-break als de score hoog genoeg wordt
